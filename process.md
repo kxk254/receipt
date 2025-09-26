@@ -60,3 +60,6 @@ docker volume prune
  ---Migrate
  docker exec -it <containername> bash
  python manage.py migrate
+
+-- remove images and volume
+ docker compose down --rmi all -v
