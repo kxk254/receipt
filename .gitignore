@@ -14,10 +14,10 @@ __pycache__/
 # staticfiles/
 
 # Environment
-.env
+# .env
 env/
-.env.*
-*.env
+# .env.*
+# *.env
 
 # IDEs and editors
 .vscode/
