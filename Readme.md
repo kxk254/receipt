@@ -54,3 +54,22 @@ docker cp ./data.json <コンテナID>:/receipt/data.json
 docker cp ./data.json <container_id>:/receipt/data.json
 
 ```
+
+```python
+
+## Dump from SQLite (via Django)
+python manage.py dumpdata --exclude=contenttypes --exclude=auth.permission --indent 2 > data.json
+
+## Migrate schema in Postgres
+python manage.py migrate --database=postgres
+
+## load into postgres
+python manage.py loaddata 
+
+## only selected data
+python manage.py dumpdata auth.user receipts.項目リスト receipts.PDF番号 receipts.receipt --indent 2 > selected_data.json
+
+
+## delete INSIDE THE INPUT VIEW ====
+
+```
