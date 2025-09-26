@@ -1,0 +1,152 @@
+{% extends "receipts/layout.html" %}
+
+{% block head %}
+
+<style>
+.list-up-total-vision {
+	display: flex;
+	flex-direction: row;
+	gap: 20px;
+	margin: auto;
+	font-family: 'Open Sans', sans-serif;
+}
+.listup-left-half {
+	max-width: 40%;
+	margin-left: 30px;
+	overflow: scroll;
+}
+.listup-right-half {
+	max-width: 60%;
+	overflow: hidden;
+}
+.listup-table {
+	padding: 0px;
+	border: none;
+	max-height: 100%;
+	box-sizing: border-box;
+    border: 1px solid gray;
+	border-collapse: collapse;
+}
+
+.listup-table-header {
+	background-color: gray;
+	color: white;
+	font-weight: bold;
+	text-align: center;
+}
+.listup-title {
+	text-align: center;
+}
+
+.right-half-button {
+    background-color: aqua;
+    font-weight: 700;
+    padding: 5px;
+    border-radius: 10px;
+    border: 3px solid blueviolet;
+    margin-bottom: 5px;
+}
+.bg-gray {
+    background-color: rgb(226, 226, 226);
+    color: rgb(73, 61, 61);
+}
+
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+    <div class="list-up-total-vision">
+        
+        <div class="listup-left-half">
+            
+            <form method="post" action="{% url 'list_up_view' %}">
+                {% csrf_token %}
+                {{ formset.management_form }}
+                <select name="filtering" class="form-control" onchange="this.form.submit()">
+                    <option value="2" {% if filtering == "2" %}selected{% endif %}>--</option>
+                    <option value="2" {% if filtering == "2" %}selected{% endif %}>全て</option>
+                    <option value="1" {% if filtering == "1" %}selected{% endif %}>取込済</option>
+                    <option value="0" {% if filtering == "0" %}selected{% endif %}>未取込</option>
+                </select>
+                <!-- <input type="submit" value="Filter"> -->
+                <h2 class="listup-title">Table Title</h2>
+                <table class="listup-table">
+                    <thead>
+                        
+                        <tr class="listup-table-header">
+                            <th><a href="#" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="以下のセクションをクリックすると右に対応する画面が表示されます" style="color: white;">ファイル名</a></th>
+                            <th>PDF番号</th>
+                            <th><a href="#" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="まだ【未処理=False】のものを選択して、右の「下記のレシートの入力へ進む」に行ってください。" style="color: white;">取込済</a></th>
+                            <th style="width: 50px; background-color: brown;"><a href="#" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="アップロードした画像を削除する場合にチェックボックスを入れて、下記の削除ボタンを押して下さい。" style="color: rgb(250, 250, 250);">削除</a></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if not formset %}
+                            <p>全て取込済です。</p>
+                        {% else %}
+                            {% for item in formset %}
+                            <tr class="listup-table-frame">
+                                <td class="{% if item.processed.value == True %}bg-gray{% endif %}"><a href="#" onclick="updateRightSection('{{ item.instance.id }}', '{{ MEDIA_URL }}{{ item.upload.value }}'); return false;">{{ item.PDF_num }}</a></td>
+                                <td class="{% if item.processed.value == True %}bg-gray{% endif %}" style="text-align: center;width: 80px;">{{ item.instance.id }}</td>
+                                <td class="{% if item.processed.value == True %}bg-gray{% endif %}" style="text-align: center;width: 80px;">{{ item.processed.value }}-{{ item.processed }}</td>
+                                <td class="{% if item.processed.value == True %}bg-gray{% endif %}" style="text-align: center;width: 80px;">{{ item.DELETE }}</td> 
+                                
+                                <!-- Hidden input fields with name attributes -->
+                                {{ item.id }}
+                            </tr>
+                            {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+                
+                
+                <span class="alert">注意! 削除の場合のみ==></span> 
+                <button type="submit" name="delete" style="margin-top: 20px; padding: 5px; border-radius: 10px;background-color: brown;color: white;">
+                        削除
+                </button>
+                
+            </form>
+            
+        </div>
+        <div class="listup-right-half">
+            {% if not formset %}
+                <p>全て取込済です。</p>
+            {% else %}
+                    <form id="navigateForm" method="GET" action="{% if items.first and items.first.id %}{% url 'input_view' id=items.first.id %}{% else %}#{% endif %}">
+                        <label for="">PDF番号:</label>
+                        <input type="text" name="id"  id="hiddenId" value="{{ items.first.id }}">
+                        <input type="hidden" name="imageUrl" id="hiddenImageUrl" value="{{ MEDIA_URL }}{{ items.first.upload }}">
+                        <button type="submit" class="right-half-button" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="下記のレシートをAI処理したのち、入力画面を表示させます。" style="color: black;">下記のレシートの入力へ進む</button>
+                    </form>
+                    
+                    <img id="displayImage" src="{{ MEDIA_URL }}{{ items.first.upload }}" alt="Image" style="max-width: 100%;">
+                    
+
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+
+        function updateRightSection(id, imageUrl) {
+        // Update the form hidden fields
+        document.getElementById('hiddenId').value = id;
+        document.getElementById('hiddenImageUrl').value = imageUrl;
+
+        // Update the image display
+        var imgElement = document.getElementById('displayImage');
+        imgElement.src = imageUrl;
+
+        // Update the form action URL with the new ID
+        var form = document.getElementById('navigateForm');
+        form.action = "{% url 'input_view' 0 %}".replace('0', id);
+        
+    }
+    </script>
+
+{% endblock %}
+

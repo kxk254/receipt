@@ -1,0 +1,19 @@
+
+<input type="text" name="keyword">
+
+
+<form method="post">
+    {% csrf_token %}
+    {{ formset.management_form }}
+    
+    {% for form in formset  %}
+        <div class="form-row">
+            {{ form.as_table }}
+        </div>
+    {% endfor %}
+
+
+    
+    
+    <button type="submit">Save Changes</button>
+</form>
