@@ -32,7 +32,7 @@ def main(request):
 ## PDFのページをスキャンする
 class InputView(LoginRequiredMixin, View):
     template_name = 'receipts/input.html'
-    print("INSIDE THE INPUT VIEW ====")
+    # print("INSIDE THE INPUT VIEW ====")
 
     def get(self, request, id):
         options = 項目リスト.objects.all().order_by('項目コード')
@@ -466,17 +466,29 @@ def restore_view(request):
         
         # Load into DB
         try:
+            logger.info("Restoring DB from file: %s", json_file.name)
             # ⚠️ Wipe all existing data
-            subprocess.run(["python", "manage.py", "flush", "--noinput"], check=True)
+            subprocess.run(["python", "manage.py", "flush", "--noinput"], 
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
             
             # ✅ Load new data
-            subprocess.run(["python", "manage.py", "loaddata", temp_path], check=True)
+            subprocess.run(["python", "manage.py", "loaddata", temp_path], 
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
             
             return HttpResponse(f"Restored database from {json_file.name}")
+
         except subprocess.CalledProcessError as e:
-            err_msg = f"Restore failed:\nstdout: {e.stdout}\nstderr: {e.stderr}"
+            err_msg = f"Restore failed:\nstdout: {e.stdout}\nstderr: {e.stderr.decode()}"
+            logger.error(err_msg)
             return HttpResponse(err_msg, status=500)
         finally:
-            os.remove(temp_path)
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
     else:
         return render(request, "receipts/restore_postgres.html")

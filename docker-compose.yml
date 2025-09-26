@@ -12,8 +12,7 @@ services:
       # - db-receipt:/receipt/db
       - /mnt/nas/develop/receipt/db_backups:/receipt/nas_backups_mount  
       # - .:/receipts 
-    ports:
-      - "8000:8000"   #host port:container port(gunicorn)
+
     env_file:
       - .env
     restart: always
