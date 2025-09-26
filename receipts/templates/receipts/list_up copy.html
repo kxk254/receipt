@@ -1,0 +1,83 @@
+{% extends "receipts/layout.html" %}
+
+
+{% block content %}
+
+    <div class="container">
+        
+        <div class="left-half">
+            
+            <form method="post" action="{% url 'list_up_view' %}">
+                {% csrf_token %}
+                <table>
+                    <thead>
+                        <h2>Table Title</h2>
+                        <tr>
+                            <th>番号</th>
+                            <th>PDF番号</th>
+                            <th>取込済</th>
+                            <th>削除</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr>
+                                <!-- <td><a href="#" onclick="showImage('{{ MEDIA_URL }}{{ item.upload }}'); return false;"> -->
+                                    <td><a href="#" onclick="updateRightSection('{{ item.id }}', '{{ MEDIA_URL }}{{ item.upload }}'); return false;">
+                                        <input type="text" name="date_field" value="{{ item.PDF_num }}">
+                                    </a>
+                                </td>
+                                <td><input type="text" name="price_field" value="{{ item.id }}"></td>
+                                <td><input type="boolean" name="processed_field" value="{{ item.processed }}"></td>
+                                <td><input type="checkbox" name="delete_items" value="{{ item.id }}"></td>
+                            
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                
+                <button type="submit">保存</button>
+                
+            </form>
+            
+        </div>
+        <div class="right-half">
+                    <!-- Replace the src with the path to your image -->
+                    <!-- <img id="displayImage" src="{{ items.first.upload }}" alt="Image" style="max-width: 100%;"> -->
+                    {% comment %} <form id="navigateForm" method="GET" action="{% url 'input-view-id' items.first.id %}"> {% endcomment %}
+                    <form id="navigateForm" method="GET" action="{% url 'input_view' id=items.first.id %}">
+                        <label for="">PDF番号:</label>
+                        <input type="text" name="id"  id="hiddenId" value="{{ items.first.id }}">
+                        <input type="hidden" name="imageUrl" id="hiddenImageUrl" value="{{ MEDIA_URL }}{{ items.first.upload }}">
+                        <button type="submit">下記のレシートの入力へ進む</button>
+                    </form>
+                    <img id="displayImage" src="{{ MEDIA_URL }}{{ items.first.upload }}" alt="Image" style="max-width: 100%;">
+
+        </div>
+    </div>
+
+    <script>
+        // function showImage(imageUrl) {
+        //     var imgElement = document.getElementById('displayImage');
+        //     imgElement.src = imageUrl;
+        // }
+
+        function updateRightSection(id, imageUrl) {
+        // Update the form hidden fields
+        document.getElementById('hiddenId').value = id;
+        document.getElementById('hiddenImageUrl').value = imageUrl;
+
+        // Update the image display
+        var imgElement = document.getElementById('displayImage');
+        imgElement.src = imageUrl;
+
+        // Update the form action URL with the new ID
+        var form = document.getElementById('navigateForm');
+        form.action = "{% url 'input_view' 0 %}".replace('0', id);
+        
+    }
+    </script>
+
+{% endblock %}
+

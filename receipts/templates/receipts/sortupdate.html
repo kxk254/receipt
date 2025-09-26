@@ -1,0 +1,265 @@
+{% extends "receipts/layout.html" %}
+
+{% block head %}
+<style>
+.sortupdate-sortsection {
+    margin-top: 2cap;
+    margin-left: 80px;
+    margin-bottom: 10px;
+}
+.sortupdate-table {
+    border: 1px solid gray;
+    border-collapse: collapse;
+    /* width: 100%; */
+    
+}
+.sortupdate-table-header {
+	background-color: gray;
+	color: white;
+	font-weight: bold;
+	text-align: center;
+}
+.width100px {
+    width: 100px;
+}
+.width50px {
+    width: 50px;
+    text-align: center;
+}
+.sort-button {
+    border-radius: 5px;
+    padding: 3px;
+}
+.hover-link {
+    padding: 0px; /* Optional padding */
+}
+    
+.hover-link:hover {
+    background-color: #b5d8df; /* Change background color on hover */
+    color: blue; /* Change text color on hover */
+    font-weight: 800;
+    padding-left: 5px;
+    transition: 0.8s;
+}
+.update-button {
+    margin-left: 10px;
+    padding: 3px;
+    background-color: aqua;
+    border-radius: 10px;
+}
+.control-screen {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+}
+.left-screen {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.left-screen-inside {
+    overflow: scroll;
+    height: 70vh;
+}
+.right-screen {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow: scroll;
+    max-height: 100vh;
+}
+.hover-td {
+    transition: 0.5s;
+    width: 100px;
+}
+
+.hover-td:hover {
+    background-color: aquamarine;
+    cursor: pointer;
+    text-decoration: underline;
+}
+.width100 {
+    width: 100px
+}
+.width250 {
+    width: 300px;
+}
+.width50 {
+    width: 50px;
+}
+
+
+</style>
+    {% endblock %}
+
+
+{% block content %}
+
+<div>
+        
+    <div>
+        <!-- 日付と項目コードを入力 -->
+        <div class="sortupdate-sortsection">
+            <form id="" action="{% url 'sortupdate_list' %}" method="get">
+
+                <a href="#" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="ソートする期間の開始期間を選んでください"><input class="date-input" type="date" name="sort_start" value="{{ sort_start }}"></a>
+                <a href="#" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="ソートする期間の終了期間を選んでください"><input class="date-input" type="date" name="sort_end" value="{{ sort_end }}"></a>
+                <a href="#" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="ソートする期間の見たい費用項目を選択してください"><select name="sort_account">
+                    <option value="all">全て</option>
+                    {% for option in options %}
+                        <option value="{{ option.項目コード }}" {% if option.項目コード == sort_account %}selected{% endif %}>
+                            {{ option.項目短縮名 }}
+                        </option>
+                    {% endfor %}
+                </select></a>
+                <button class="sort-button">ソートする</button>
+            </form>
+        </div>
+        <!-- <div class="upper-button-half-top"> -->
+        <div class="control-screen">  <!-- CONTROL SCREEN -->
+            <div class="left-screen">
+                <div class="left-screen-inside" >
+                    <h2>入力項目をアップデート</h2>
+                    <form id="sortupdateForm" method="post" action="">
+                        {% csrf_token %}
+                        {{ formset.management_form }}
+                        <table class="sortupdate-table">
+                            <input type="hidden" name="sort_start" value="{{ sort_start }}">
+                            <input type="hidden" name="sort_end" value="{{ sort_end }}">
+                            <input type="hidden" name="sort_account" value="{{ sort_account }}">
+                            <thead>
+                                <tr class="sortupdate-table-header">
+                                    <th class="width50px">削除</th>
+                                    <th data-bs-toggle="tooltip" data-bs-title="下の箇所をクリックすると対応するレシートを下部に表示させることができます。">日付(PDF表示)</th>
+                                    <th>種類</th>
+                                    <th class="width100px">価格</th>
+                                    <th>登録番号</th>
+                                    <th>備考</th>
+                                    <th>PDF番号</th>
+                                    <!-- <th class="width100px"><a href="#" data-bs-toggle="tooltip" data-bs-title="下の箇所をクリックすると対応するレシートを下部に表示させることができます。" style="color: white;">表示</a></th> -->
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ocr in formset %}
+                                    <tr>
+                                        <td style="display: flex; justify-content: center;">{{ ocr.DELETE }}</td>
+                                        <td class="hover-td"><a href="#" onclick="selectItem(event, '{{ ocr.instance.id }}', '{{ MEDIA_URL }}{{ ocr.instance.PDF番号.upload }}'); return false;">{{ ocr.日付 }}</a></td>
+                                        <td>{{ ocr.項目コード }}</td>
+                                        <td>{{ ocr.価格 }}</td>
+                                        <td>{{ ocr.登録番号 }}</td>
+                                        <td>{{ ocr.備考 }}</td>
+                                        <td>{{ ocr.PDF番号 }}</td>
+                                        <!-- <td class="width100px"><a href="#" onclick="selectItem(event, '{{ ocr.instance.id }}', '{{ MEDIA_URL }}{{ ocr.instance.PDF番号.upload }}'); return false;">表示</a></td> -->
+                                        {{ ocr.id }}
+                                    </tr>
+                                {% endfor %}
+                                    
+                            </tbody>
+                        </table>
+                    </form>
+                </div>   <!--  upper half end-->
+                <div><button id="updateBtn" name="sortupdate" type="button" class="update-button">Update button</div>
+            </div>
+            <!-- </div>  upper half button top -->
+
+
+            <div class="right-screen">
+                <div>
+                        <div >
+                            <label for="hiddenId">レシートID: </label>
+                            <input type="text" name="id"  id="hiddenId" value="{{ options.first.id }}">
+                            <input type="hidden" name="imageUrl" id="hiddenImageUrl" value="{{ MEDIA_URL }}{{ options.first.upload }}">
+                        </div>
+                    <img id="displayImage" src="{{ MEDIA_URL }}{{ options.first.upload }}" alt="Image" style="max-width: 100%;">
+                </div>  
+            </div>     <!--  lower half end-->
+        </div>  <!--  control screen end-->
+
+    </div>
+    
+</div>  <!-- container // total-vision // ends-->
+
+
+
+<script>
+
+
+    function updateBottomSection(id, imageUrl) {
+        // Update the form hidden fields
+        document.getElementById('hiddenId').value = id;
+        document.getElementById('hiddenImageUrl').value = imageUrl;
+
+        // Update the image display
+        var imgElement = document.getElementById('displayImage');
+        imgElement.src = imageUrl;
+
+        // Update the form action URL with the new ID
+        var form = document.getElementById('navigateForm');
+        form.action = "{% url 'input_view' 0 %}".replace('0', id);
+   
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+    // Set initial state for the image
+    var imgElement = document.getElementById('displayImage');
+    if (imgElement) {
+        imgElement.src = '';  // Clear the image source
+    }
+    });
+
+    function selectItem(event, itemId, mediaUrl) {
+        console.log("selectItem called with itemId:", itemId);
+        event.preventDefault();
+
+        var imgElement = document.getElementById('displayImage');
+        var hiddenIdElement = document.getElementById('hiddenId');
+        var hiddenImageUrlElement = document.getElementById('hiddenImageUrl');
+
+        if (!itemId || !mediaUrl) {
+            console.log("No items are selected...");
+            imgElement.src = '';  // Clear the image source
+            imgElement.style.display = "none";  // Hide the image
+            hiddenIdElement.value = '';  // Clear the hidden ID field
+            hiddenImageUrlElement.value = '';  // Clear the hidden image URL field
+            return;
+        }
+
+        // If a valid item is selected
+        console.log("Selected itemId:", itemId);
+        console.log("Selected mediaUrl:", mediaUrl);
+
+        // Update hidden form fields
+        hiddenIdElement.value = itemId;
+        hiddenImageUrlElement.value = mediaUrl;
+
+        // Update image source and show the image
+        imgElement.src = mediaUrl;
+        imgElement.style.display = "block";  // Show the image if it was hidden
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+
+        // （１）右側に表示のボタンを外側よりオペレーションする機能
+        document.getElementById("updateBtn").addEventListener("click", function() {
+            console.log("Submit button clicked");
+            var form = document.getElementById("sortupdateForm");
+            
+            if (form) {
+                console.log("Form exists, submitting...");
+                form.submit();
+            } else {
+                console.log("Form not found");
+            }
+
+        });  // (1)の機能終わり
+
+
+
+    });
+</script>
+    
+
+{% endblock %}
+

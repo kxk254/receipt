@@ -1,0 +1,114 @@
+{% extends "receipts/layout.html" %}
+{% load humanize %}
+
+{% block head %}
+<style>
+.container-input {
+    display: flex; 
+    flex-direction: row;
+}
+.left-half {
+    flex: 1;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+}
+.image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: scroll; 
+    cursor: grabbing;
+}
+#zoomable-image {
+    max-width: 100%; 
+    transform-origin: 0% 0%; 
+    transition: transform 0.2s ease-in-out; 
+}
+.right-half {
+    flex: 1;
+}
+
+
+
+</style>
+
+{% endblock %}
+
+{% block content %}
+                
+
+    <div class="container-input">
+            
+
+            <div class="left-half">
+                <!-- Zoom controls -->
+                <div class="zoom-controls">
+                    <label for="zoom-range">Zoom:</label>
+                    <input type="range" id="zoom-range" min="50" max="200" value="100">
+                </div>
+                
+                <!-- Replace the src with the path to your image -->
+                 <div class="image-container scroll-parent dragscroll">
+                    <img id="zoomable-image" src="{{ image_path }}" alt="Image">
+                </div>
+            </div>
+
+            
+
+            <div class="right-half">
+                <h2>Table Title</h2>
+                <form method="post" action="{% url 'create_view'  %}">
+                    {% csrf_token %}
+                    {{ ocrs.management_form }}
+                    <input type="hidden" name="image_path" value="{{ image_path }}">
+                    {% for error in ocrs.errors %}
+                        <p class="error">{{ error }}</p>
+                    {% endfor %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>削除</th>
+                                <th>日付</th>
+                                <th>種類</th>
+                                <th>価格</th>
+                                <th>登録番号</th>
+                                <th>備考</th>
+                                <th>PDF番号</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ocr in ocrs %}
+                            <tr>
+                                <td>{{ ocr.DELETE }}</td>
+                                <td>{{ ocr.日付 }}</td>
+                                <td>{{ ocr.項目コード }}</td>
+                                <td>{{ ocr.価格 }}</td>
+                                <td>{{ ocr.登録番号 }}</td>
+                                <td>{{ ocr.備考 }}</td>
+                                <td>{{ ocr.PDF番号 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <button type="submit">保存</button>
+                </form>
+            </div>
+    </div>
+
+    <script>
+        const zoomRange = document.getElementById('zoom-range')
+        const image = document.getElementById('zoomable-image')
+
+        zoomRange.addEventListener('input', function() {
+            const zoomValue = zoomRange.value;
+            image.style.transform = `scale(${zoomValue/100})`;
+        });
+
+
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/dragscroll"></script>
+
+{% endblock %}
+

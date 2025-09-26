@@ -1,0 +1,342 @@
+{% extends "receipts/layout.html" %}
+
+{% block head %}
+<style>
+.left-half1 {
+    flex: 1;
+    position: relative;
+    /* display: flex; */
+    flex-direction: column;
+    width: 500px;
+    max-width: 500px;
+    margin-right: 30px;
+    overflow: scroll;
+}
+.right-half {
+    flex: 2;
+    /* max-width: 60%; */
+    width: 70vw;
+    overflow: scroll;
+}
+.jpeg-container {
+    display: flex;
+    /* flex-direction: row;  */
+    max-width: 100%;
+    /* width: 100%; */
+    margin: auto;
+    margin-top: 10px;
+    font-family: 'Open Sans', sans-serif;
+}
+.jpegall-title {
+	text-align: center;
+}
+.jpegall-table {
+	padding: 0px;
+	border: 1px solid gray;
+	max-height: 100%;
+	box-sizing: border-box;
+    border-collapse: collapse;
+}
+.jpegall-table input {
+    max-height: 23px;
+}
+.jpegall-table-frame {
+	max-height: 23px;
+}
+.jpegall-radio {
+    text-align: center;
+}
+.jpegall-header-items {
+    background-color: darkgrey;
+    color: white;
+    text-align: center;
+}
+.to40px {
+    width: 50px;
+}
+.to70px {
+    width: 70px;
+}
+.upper-half {
+    margin: auto;
+    overflow: scroll;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.upper-button {
+    text-align: center;
+    margin: auto;
+}
+
+.lower-half {
+    margin-top: 10px;
+    background-color: darkcyan;
+    border: 1px solid darkgrey;
+    border-radius: 30px;
+}
+.small-width {
+    width: 100px;
+}
+.lowerhalf-label {
+    margin-top: 20px;
+    text-align: center;
+    background-color: darkcyan;
+    color: white;
+    font-weight: 800;
+}
+.lowerhalf-img {
+    border-radius: 20px;
+    border: 2px solid darkcyan;
+}
+.black-word {
+    color: black;
+    text-align: center;
+}
+</style>
+    {% endblock %}
+
+
+{% block content %}
+
+
+        
+    
+        <!-- Left Half for selecting items -->
+
+<div class="jpeg-container">
+
+                
+            <div class="left-half1">
+                    <table class="jpegall-table">
+                        <thead>
+                            <tr class="jpegall-header-items">
+                                <th>番号</th>
+                                <th class="small-width">PDF番号</th>
+                                <th class="to40px">選択</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in object_list  %}
+                            <tr class="jpegall-table-frame">
+                                    <td class="jpegall-table">
+                                        <a href="#" onclick="selectItem(event, '{{ item.id }}', '{{ MEDIA_URL }}{{ item.upload }}'); return false;">
+                                            <input type="text" name="date_field" value="{{ item.PDF_num }}"
+                                            {% if item.id == selected_pdf_id %}readonly{% endif %}>
+                                        </a>
+                                    </td>
+                                    <td class="jpegall-table small-width"><input type="text" class="small-width" name="price_field" value="{{ item.id }}"
+                                        {% if item.id == selected_pdf_id %}readonly{% endif %}>
+                                    </td>
+                                    <td class="jpegall-table jpegall-radio to40px"><input type="radio" id="radio_{{ item.id }}" name="select_field" value="{{ item.id }}"
+                                        {% if item.id == selected_pdf_id %}readonly{% endif %}>
+                                    </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+            </div>  <!-- end of left half -->
+             
+
+            <!--  =================RIGHT HALF===========================    -->
+    <form id="myForm" method="POST" action="{% url 'jpeg_all_list' %}">
+        {% csrf_token %}
+        {{ formset.management_form }}
+            <div class="right-half">
+                <label for="rightBottomImg">PDF番号: </label><input type="text" id="rightBottomImg"  value="{{ selected_pdf_id }}" readonly>
+                
+                <table class="jpegall-table">
+                    <thead>
+                        <tr class="jpegall-header-items">
+                            <th class="to40px">削除</th>
+                            <th>日付</th>
+                            <th class="to70px">種類</th>
+                            <th class="small-width">価格</th>
+                            <th>登録番号</th>
+                            <th>備考</th>
+                            <th class="small-width">PDF番号</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ocr in formset %}
+                            <tr>
+                                <td>{{ ocr.DELETE }}</td>
+                                <td>{{ ocr.日付 }}</td>
+                                <td>{{ ocr.項目コード }}</td>
+                                <td>{{ ocr.価格 }}</td>
+                                <td>{{ ocr.登録番号 }}</td>
+                                <td>{{ ocr.備考 }}</td>
+                                <td>{{ ocr.PDF番号 }}</td>
+                                {{ ocr.id }}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                  </table>
+
+                <a href="" name="save" onclick="selectItem2(event, '{{ selected_pdf_id }}', '{{ MEDIA_URL }}{{ path_info }}'); return false;">保存</a>
+                <div>
+                    <img id="displayImageRightBottom" class="lowerhalf-img" src="{{ MEDIA_URL }}{{ path_info }}" alt="Image" style="max-width: 100%;">
+                </div>
+
+            </div>  <!-- RIGHT Half ends-->
+    </form>
+
+</div>  <!-- container // total-vision // ends-->
+
+
+            
+
+        
+
+
+
+<script>
+
+    // Receive value from HTML anchor tag as a global function
+    function selectItem(event, itemId, mediaUrl) {
+        event.preventDefault();
+
+        if (itemId == null || itemId === '' || itemId === undefined) {
+            console.log("no items are selected....");
+            console.log("Selected itemId:", itemId);
+
+            var imgRightElement = document.getElementById('displayImageRightBottom');
+            imgRightElement.src = '';  // Clear the image source
+            imgRightElement.style.display = "none";  // Hide the image
+
+            return;
+        }
+
+        // // // udate the bottom section
+        // updateBottomRightSection(itemId, mediaUrl);
+        // console.log("Selected itemId:", itemId);
+
+        localStorage.setItem('selectedImageUrl', mediaUrl);
+        localStorage.setItem('selectedItemId', itemId);
+        var form = document.getElementById('myForm');
+        var selectField = document.createElement('input');
+        selectField.type = 'hidden';
+        selectField.name = 'select_field';
+        selectField.value = itemId;
+        form.appendChild(selectField);
+        form.submit();
+        // var submitButton = document.getElementById('submitBtn'); 
+        // submitButton.click();
+
+    }
+
+    // Receive value from HTML anchor tag as a global function
+    function selectItem2(event, itemId, mediaUrl) {
+        event.preventDefault();
+
+        var userConfirmed = confirm("Do you want to proceed with this action?");
+
+        if (userConfirmed) {
+            if (itemId == null || itemId === '' || itemId === undefined) {
+                console.log("no items are selected....");
+                console.log("Selected itemId:", itemId);
+
+                alert("route if itemId equal to null: " + itemId);
+
+                var imgRightElement = document.getElementById('displayImageRightBottom');
+                imgRightElement.src = '';  // Clear the image source
+                imgRightElement.style.display = "none";  // Hide the image
+
+                return;
+            }
+
+            localStorage.setItem('selectedImageUrl', mediaUrl);
+            localStorage.setItem('selectedItemId', itemId);
+            var form = document.getElementById('myForm');
+            var selectField = document.createElement('input');
+            selectField.type = 'hidden';
+            selectField.name = 'select_field';
+            selectField.value = itemId;
+
+            form.appendChild(selectField);
+
+            // Create the 'save' input field
+            var saveField = document.createElement('input');
+            saveField.type = 'hidden';
+            saveField.name = 'save';
+            saveField.value = 'True'; // Note that the value should be a string, not a boolean
+            form.appendChild(saveField);
+
+            form.submit();
+
+
+        } else {
+            // Do nothing if the user clicked "Cancel"
+            console.log("Action cancelled by user.");
+        }
+
+        const radioButton = document.getElementById('radio_' + itemId);
+            if (radioButton) {
+                radioButton.checked = true;
+            }
+
+    }
+
+    
+
+    
+    // // define a function inside the DOMContentLoaded as a global function
+    // function updateBottomRightSection(itemId, imageUrl) {
+    //         // Update the form hidden fields
+    //         document.getElementById('rightBottomImg').value = itemId;
+    //         document.getElementById('rightBottomImg2').value = itemId;
+    //         // Automatically select the radio button
+    //         const radioButton = document.getElementById('radio_' + itemId);
+    //         if (radioButton) {
+    //             radioButton.checked = true;
+    //         }
+
+
+    //         // Update the image display
+    //         var imgElement = document.getElementById('displayImageRightBottom');
+    //         imgElement.src = imageUrl;
+
+    //         localStorage.setItem('selectedImageUrl', mediaUrl);
+    //         localStorage.setItem('selectedItemId', itemId);
+    //         var form = document.getElementById('myForm');
+    //         var selectField = document.createElement('input');
+    //         selectField.type = 'hidden';
+    //         selectField.name = 'select_field';
+    //         selectField.value = itemId;
+    //         form.appendChild(selectField);
+    //         form.submit();
+    //         var submitButton = document.getElementById('submitBtn'); 
+    //         submitButton.click();
+
+    //     }
+
+    // // // // 画面の初期化 (---5---)
+    // document.addEventListener("DOMContentLoaded", function() {
+
+    //     // Set initial state for the image
+    //     var imgRightElement = document.getElementById('displayImageRightBottom');
+
+    //     if (imgRightElement) {
+    //         imgRightElement.src = '';  // Clear the image source initially
+    //     }
+
+    //     var imageUrl = localStorage.getItem('selectedImageUrl');
+    //     var id = localStorage.getItem('selectedItemId');
+
+    //     if (imageUrl && imgRightElement) {
+    //         imgRightElement.src = imageUrl;  // Set the image source from localStorage
+
+    //     }
+        
+    // });  // (---5---)
+
+
+
+
+</script>
+    
+
+{% endblock %}
+
