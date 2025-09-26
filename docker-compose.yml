@@ -26,12 +26,12 @@ services:
       - receipt-pgdata:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: receipt_db
-      POSTGRES_USER: receipt_user
+      POSTGRES_USER: konno
       POSTGRES_PASSWORD: supersecurepassword
     ports:
-      - "5432:5432"  # Optional: expose if you want to connect from host
+      - "5433:5432"  # Optional: expose if you want to connect from host
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U receipt_user"]
+      test: ["CMD-SHELL", "pg_isready -U konno"]
       interval: 10s
       timeout: 5s
       retries: 5

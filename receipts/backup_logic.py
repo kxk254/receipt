@@ -113,7 +113,7 @@ def dump_postgres_to_json():
     try:
         os.makedirs(os.path.dirname(backup_path), exist_ok=True)
 
-        with open(backup_path, "w") as f:
+        with open(backup_path, "w", encoding="utf-8") as f:
             result = subprocess.run(
                 ["python", "manage.py", "dumpdata", "--natural-primary", "--natural-foreign", "--indent", "2"],
                 cwd="/receipt", 

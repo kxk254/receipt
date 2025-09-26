@@ -36,6 +36,8 @@ DATABASES = {
 # dump data
 python manage.py dumpdata --natural-primary --natural-foreign --indent 2 > data.json
 
+python manage.py dumpdata --exclude auth.permission --exclude contenttypes --natural-primary --natural-foreign --indent 2 > data.json
+
 # Migrate Schema
 python manage.py migrate
 
@@ -47,5 +49,8 @@ python manage.py dumpdata --indent 2 > /mnt/nas/remanager/db/db_backups/db_backu
 
 # Resotre data
 python manage.py loaddata /mnt/nas/remanager/db/db_backups/db_backup_2025-09-24_15-12-30.json
+
+docker cp ./data.json <コンテナID>:/receipt/data.json
+docker cp ./data.json <container_id>:/receipt/data.json
 
 ```

@@ -474,7 +474,8 @@ def restore_view(request):
             
             return HttpResponse(f"Restored database from {json_file.name}")
         except subprocess.CalledProcessError as e:
-            return HttpResponse(F"Restore failed: {e}", status=500)
+            err_msg = f"Restore failed:\nstdout: {e.stdout}\nstderr: {e.stderr}"
+            return HttpResponse(err_msg, status=500)
         finally:
             os.remove(temp_path)
     else:
