@@ -454,82 +454,111 @@ import shutil, logging, subprocess
 logger = logging.getLogger(__name__)
 
 @csrf_exempt
-def restore_view(request):
-    fixed_filename = "data.json"
+# def restore_view(request):
+#     fixed_filename = "data.json"
     
-    if request.method == "POST":
+#     if request.method == "POST":
         
+#         json_file = request.FILES.get("json_file")
+#         print("INSIDE THE RESTORE VIEW inside POST ====", json_file)
+#         if not json_file:
+#             return HttpResponse("No file uploaded", status=400)
+
+#         # Save original uploaded file temporarily in mount folder
+#         original_path = f"/receipt/nas_backups_mount/{json_file.name}"
+#         print("INSIDE THE RESTORE VIEW original_path ====", original_path)
+#         with open(original_path, "wb+") as f:
+#             for chunk in json_file.chunks():
+#                 f.write(chunk)
+
+#         # Copy to /receipt (where manage.py lives)
+#         cwd = "/receipt"
+#         copied_path = os.path.join(cwd, fixed_filename)
+#         try:
+#             shutil.copyfile(original_path, copied_path)
+#         except Exception as e:
+#             return HttpResponse(f"Failed to copy file: {str(e)}", status=500)
+        
+#         # Load into DB
+#         print(f"File copied from {original_path} to {copied_path}")
+#         print(f"File exists after copy: {os.path.exists(copied_path)}")
+#         print(f"Saved temp file, about to start DB restoration: {copied_path}")
+
+#         try:
+#             logger.info("Restoring DB from file: %s", json_file.name)
+#             # ⚠️ Wipe all existing data
+#             print("About to flush data")
+#             flush_proc = subprocess.run(["python", "manage.py", "flush", "--noinput"], 
+#                 cwd="/receipt",                
+#                 check=True,
+#                 stdout=subprocess.PIPE,
+#                 stderr=subprocess.PIPE,
+#             )
+#             print("now trying to flush data")
+#             print(f"Flush returncode: {flush_proc.returncode}")
+#             print(f"Flush stdout: {flush_proc.stdout.decode()}")
+#             print(f"Flush stderr: {flush_proc.stderr.decode()}")
+#             if flush_proc.returncode != 0:
+#                 return HttpResponse(f"Flush failed:\{flush_proc.sterr.decode()}", status=500)
+            
+#             # ✅ Load new data
+#             load_proc = subprocess.run(["python", "manage.py", "loaddata", fixed_filename], 
+#                 cwd="/receipt",   
+#                 check=True,
+#                 stdout=subprocess.PIPE,
+#                 stderr=subprocess.PIPE,
+#             )
+#             print(f"load returncode: {load_proc.returncode}")
+#             print(f"load stdout: {load_proc.stdout.decode()}")
+#             print(f"load stderr: {load_proc.stderr.decode()}")
+#             if load_proc.returncode != 0:
+#                 return HttpResponse(f"load failed:\{load_proc.sterr.decode()}", status=500)
+            
+#             logger.info(f"Database restored successfully from {json_file.name}")
+#             return HttpResponse(f"Restored database from {json_file.name}")
+
+#         except Exception  as e:
+#             print("INSIDE THE RESTORE VIEW except section directly ====")
+#             print(f"Exception caught: {type(e).__name__} - {str(e)}")
+
+#             stdout = getattr(e, 'stdout', b'').decode()
+#             stderr = getattr(e, 'stderr', b'').decode()
+#             err_msg = f"Restore failed:\nstdout: {stdout}\nstderr: {stderr}"
+#             logger.error(err_msg)
+#             return HttpResponse(err_msg, status=500)
+#         finally:
+#             print("INSIDE THE RESTORE VIEW finally section directly ====")
+#             if os.path.exists(copied_path):
+#                 os.remove(copied_path)
+#     else:
+#         print("INSIDE THE RESTORE VIEW except ====")
+#         return render(request, "receipts/restore_postgres.html")
+
+@csrf_exempt
+def restore_view(request):
+    if request.method == "POST":
         json_file = request.FILES.get("json_file")
-        print("INSIDE THE RESTORE VIEW inside POST ====", json_file)
         if not json_file:
             return HttpResponse("No file uploaded", status=400)
-
-        # Save original uploaded file temporarily in mount folder
-        original_path = f"/receipt/nas_backups_mount/{json_file.name}"
-        print("INSIDE THE RESTORE VIEW original_path ====", original_path)
-        with open(original_path, "wb+") as f:
+        
+        # save temporary
+        temp_path = f"/tmp/{json_file.name}"
+        with open(temp_path, "wb+") as f:
             for chunk in json_file.chunks():
                 f.write(chunk)
-
-        # Copy to /receipt (where manage.py lives)
-        cwd = "/receipt"
-        copied_path = os.path.join(cwd, fixed_filename)
-        try:
-            shutil.copyfile(original_path, copied_path)
-        except Exception as e:
-            return HttpResponse(f"Failed to copy file: {str(e)}", status=500)
         
         # Load into DB
-        print(f"File copied from {original_path} to {copied_path}")
-        print(f"File exists after copy: {os.path.exists(copied_path)}")
-        print(f"Saved temp file, about to start DB restoration: {copied_path}")
-
         try:
-            logger.info("Restoring DB from file: %s", json_file.name)
             # ⚠️ Wipe all existing data
-            print("About to flush data")
-            flush_proc = subprocess.run(["python", "manage.py", "flush", "--noinput"], 
-                cwd="/receipt",                
-                check=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            print("now trying to flush data")
-            print(f"Flush returncode: {flush_proc.returncode}")
-            print(f"Flush stdout: {flush_proc.stdout.decode()}")
-            print(f"Flush stderr: {flush_proc.stderr.decode()}")
-            if flush_proc.returncode != 0:
-                return HttpResponse(f"Flush failed:\{flush_proc.sterr.decode()}", status=500)
+            subprocess.run(["python", "manage.py", "flush", "--noinput"], check=True)
             
             # ✅ Load new data
-            load_proc = subprocess.run(["python", "manage.py", "loaddata", fixed_filename], 
-                cwd="/receipt",   
-                check=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            print(f"load returncode: {load_proc.returncode}")
-            print(f"load stdout: {load_proc.stdout.decode()}")
-            print(f"load stderr: {load_proc.stderr.decode()}")
-            if load_proc.returncode != 0:
-                return HttpResponse(f"load failed:\{load_proc.sterr.decode()}", status=500)
+            subprocess.run(["python", "manage.py", "loaddata", temp_path], check=True)
             
-            logger.info(f"Database restored successfully from {json_file.name}")
             return HttpResponse(f"Restored database from {json_file.name}")
-
-        except Exception  as e:
-            print("INSIDE THE RESTORE VIEW except section directly ====")
-            print(f"Exception caught: {type(e).__name__} - {str(e)}")
-
-            stdout = getattr(e, 'stdout', b'').decode()
-            stderr = getattr(e, 'stderr', b'').decode()
-            err_msg = f"Restore failed:\nstdout: {stdout}\nstderr: {stderr}"
-            logger.error(err_msg)
-            return HttpResponse(err_msg, status=500)
+        except subprocess.CalledProcessError as e:
+            return HttpResponse(F"Restore failed: {e}", status=500)
         finally:
-            print("INSIDE THE RESTORE VIEW finally section directly ====")
-            if os.path.exists(copied_path):
-                os.remove(copied_path)
+            os.remove(temp_path)
     else:
-        print("INSIDE THE RESTORE VIEW except ====")
         return render(request, "receipts/restore_postgres.html")
