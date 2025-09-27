@@ -1,5 +1,7 @@
 # Postgres
 
+POSTGRES PORT outside 5433:
+
 ```python
 --docker-compose.yaml--
   postgres:

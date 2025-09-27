@@ -11,7 +11,7 @@ services:
       - /mnt/nas/develop/receipt/media:/receipt/media
       # - db-receipt:/receipt/db
       - /mnt/nas/develop/receipt/db_backups:/receipt/nas_backups_mount  
-      # - .:/receipts 
+      - .:/receipt
 
     env_file:
       - .env
@@ -30,7 +30,7 @@ services:
     ports:
       - "5433:5432"  # Optional: expose if you want to connect from host
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U konno"]
+      test: ["CMD-SHELL", "pg_isready -U konno -D receipt_db"]
       interval: 10s
       timeout: 5s
       retries: 5
