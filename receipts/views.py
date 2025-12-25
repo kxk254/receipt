@@ -489,6 +489,7 @@ UPDATED BACKUP UPON LOGOFF 2025/12/25
 """
 def logout_and_backup_view(request):
     # Step 1: Trigger NAS backup
+    
     try:
         backup_path = backup_logic.dump_postgres_to_json_to_nas()
         filename = os.path.basename(backup_path)
