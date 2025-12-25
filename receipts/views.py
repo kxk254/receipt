@@ -17,6 +17,8 @@ import calendar
 from dateutil.relativedelta import relativedelta
 from django.forms import modelformset_factory
 from . import backup_logic
+# 2025/12/25
+from django.contrib.auth import logout
 
 # konno
 # kkonno@soliton-cm.com 
@@ -480,3 +482,23 @@ def restore_view(request):
             os.remove(temp_path)
     else:
         return render(request, "receipts/restore_postgres.html")
+
+
+"""
+UPDATED BACKUP UPON LOGOFF 2025/12/25
+"""
+def logout_and_backup_view(request):
+    # Step 1: Trigger NAS backup
+    try:
+        backup_path = backup_logic.dump_postgres_to_json_to_nas()
+        filename = os.path.basename(backup_path)
+        # Optionally: show a message to the user
+        print(f"NAS backup successful: {filename}")
+    except Exception as e:
+        print(f"NAS backup error: {e}")  # or log it properly
+
+    # Step 2: Logout user
+    logout(request)
+
+    # Step 3: Redirect to login page (or homepage)
+    return redirect('account_login')  # change to your login URL name

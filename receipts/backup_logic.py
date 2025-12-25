@@ -134,4 +134,32 @@ def dump_postgres_to_json():
     except Exception as e:
         raise Exception(f"Failed to create backup: {e}")
 
+""" 
+ADDED 2025/12/25
+"""
+
+def dump_postgres_to_json_to_nas():
+    timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    filename = f"db_backup_{timestamp}.json"
+    backup_path = os.path.join(NAS_BACKUP_DIR, filename)
+
+    try:
+        os.makedirs(NAS_BACKUP_DIR, exist_ok=True)
+
+        with open(backup_path, "w") as f:
+            subprocess.run(
+                ["python", "manage.py", "dumpdata",
+                 "--natural-primary", "--natural-foreign", "--indent", "2"],
+                cwd="/receipt",
+                stdout=f,
+                stderr=subprocess.PIPE,
+                text=True,
+                check=True
+            )
+
+        return backup_path
+
+    except subprocess.CalledProcessError as e:
+        raise Exception(f"Subprocess failed: {e.stderr}")
+
 
