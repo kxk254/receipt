@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import Receipt, 項目リスト, PDF番号
 from django.views.generic.base import View
 from programs.ocr_main import ocr_get, get_initial_data
-import os
+import os, subprocess
 from django.conf import settings
 from datetime import datetime
 from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse
@@ -34,7 +34,7 @@ def main(request):
 ## PDFのページをスキャンする
 class InputView(LoginRequiredMixin, View):
     template_name = 'receipts/input.html'
-    print("INSIDE THE INPUT VIEW ====")
+    #print("INSIDE THE INPUT VIEW ====")
 
     def get(self, request, id):
         options = 項目リスト.objects.all().order_by('項目コード')
