@@ -4,7 +4,7 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile  
-    container_name: receipt-app-postgres
+    container_name: app-receipt
     volumes:
       - static-receipt:/receipt/staticfiles
       # - media-vol:/receipts/media
@@ -20,7 +20,7 @@ services:
   
   db:
     image: postgres:14
-    container_name: receipt-db-postgres
+    container_name: db-receipt
     restart: always
     volumes:
       - receipt-pgdata:/var/lib/postgresql/data
@@ -38,7 +38,7 @@ services:
 
   nginx:
     image: nginx:latest
-    container_name: receipt-nginx-postgres
+    container_name: ngx-receipt
     ports:
       - "8701:80"  #host machine port : nginx container port
     volumes:
