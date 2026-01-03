@@ -65,11 +65,11 @@ docker volume prune
  docker compose down --rmi all -v
 
 ### Database Initiation
-docker exec -i receipt-db-postgres psql -U konno -d postgres -c "DROP DATABASE IF EXISTS receipt_db;"
+docker exec -i db-receipt psql -U konno -d postgres -c "DROP DATABASE IF EXISTS receipt_db;"
 
-docker exec -i receipt-db-postgres psql -U konno -d postgres -c "CREATE DATABASE receipt_db;"
+docker exec -i db-receipt psql -U konno -d postgres -c "CREATE DATABASE receipt_db;"
 
-docker exec -i receipt-db-postgres psql -U konno -d receipt_db < ss.sql
+docker exec -i db-receipt psql -U konno -d receipt_db < ss.sql
 
 ### mount nas when in the proper network
 sudo mount /mnt/nas
